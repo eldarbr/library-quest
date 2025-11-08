@@ -1,0 +1,156 @@
+swagger: "2.0"
+info:
+  title: "Quest API"
+  description: "API for retrieving and validating team quests."
+  version: "1.0.0"
+schemes:
+  - "http"
+
+tags:
+  - name: "v1"
+
+paths:
+  /api/v1/quest:
+    get:
+      tags:
+        - "v1"
+      summary: "Retrieve quest details for a team"
+      description: "Fetches the current quest, including its ID and the words needed to solve it, for a specified team."
+      produces:
+        - "application/json"
+      parameters:
+        - name: "team_id"
+          in: "query"
+          description: "The numeric ID of the team."
+          required: true
+          type: "integer"
+          format: "int64"
+      responses:
+        "200":
+          description: "Successful retrieval of quest data."
+          schema:
+            $ref: "#/definitions/QuestResponse"
+        "500":
+          description: "Internal server error."
+          schema:
+            $ref: "#/definitions/InternalServerError"
+
+  /api/v1/validate:
+    post:
+      tags:
+        - "v1"
+      summary: "Validate a team's quest answer"
+      description: "Submits an answer for a given quest and team ID for validation."
+      consumes:
+        - "application/json"
+      produces:
+        - "application/json"
+      parameters:
+        - in: "body"
+          name: "body"
+          description: "The validation payload containing the team, quest, and their answer."
+          required: true
+          schema:
+            $ref: "#/definitions/ValidationRequest"
+      responses:
+        "200":
+          description: "The provided answer is correct."
+          schema:
+            type: "object"
+        "400":
+          description: "The provided answer is incorrect. The response body contains the indices of the incorrect words."
+          schema:
+            $ref: "#/definitions/ValidationError"
+        "401":
+          description: "The team is not authorized to submit an answer for this quest."
+          schema:
+            $ref: "#/definitions/AuthorizationError"
+        "500":
+          description: "Internal server error."
+          schema:
+            $ref: "#/definitions/InternalServerError"
+
+definitions:
+  QuestResponse:
+    type: "object"
+    required:
+      - "quest_id"
+    properties:
+      quest_id:
+        type: "integer"
+        format: "int64"
+        example: 101
+      words:
+        type: "array"
+        items:
+          $ref: "#/definitions/QuestWord"
+
+  QuestWord:
+    type: "object"
+    properties:
+      quest_word_idx:
+        type: "integer"
+        description: "The zero-based index of this word within the quest's answer."
+        example: 0
+      position:
+        $ref: "#/definitions/WordPosition"
+
+  WordPosition:
+    type: "object"
+    properties:
+      book:
+        type: "string"
+        example: "A31-1"
+      page:
+        type: "string"
+        example: "42"
+      line:
+        type: "string"
+        example: "15"
+      word:
+        type: "string"
+        example: "3"
+
+  ValidationRequest:
+    type: "object"
+    required:
+      - "team_id"
+      - "quest_id"
+      - "answer"
+    properties:
+      team_id:
+        type: "integer"
+        format: "int64"
+        example: 25
+      quest_id:
+        type: "integer"
+        format: "int64"
+        example: 101
+      answer:
+        type: "array"
+        items:
+          type: "string"
+        example: ["first_word", "second_word", "third_word"]
+
+  ValidationError:
+    type: "object"
+    properties:
+      mistakes:
+        type: "array"
+        description: "An array of indices corresponding to the incorrect words in the submitted answer."
+        items:
+          type: "integer"
+        example: [1, 2]
+
+  AuthorizationError:
+    type: "object"
+    properties:
+      error:
+        type: "string"
+        example: "team 25 is not allowed to complete quest 102"
+  InternalServerError:
+    type: "object"
+    properties:
+      error:
+        type: "string"
+        example: "internal server error"
