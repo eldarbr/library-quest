@@ -8,6 +8,7 @@ import {
   type InternalServerError,
 } from "./Api.ts";
 import Cards from "./components/Cards/Cards.tsx";
+import "./App.css";
 
 function App() {
   const [questData, setQuestData] = useState<QuestResponse | null>(null);
@@ -50,17 +51,19 @@ function App() {
   };
 
   return (
-    <>
+    <div className="App">
       <h2>Library quest</h2>
       {questData === null && <TeamForm onSubmitTeam={handleFetchQuest} />}
       {questData !== null && validationResult === null && (
         <Cards words={questData.words} onSubmitAnswers={handleValidate} />
       )}
       {validationMistakes !== null && (
-        <p>Ошибки в словах: {validationMistakes}</p>
+        <p className="message error">Ошибки в словах: {validationMistakes}</p>
       )}
-      {validationResult !== null && <p>{validationResult}</p>}
-    </>
+      {validationResult !== null && (
+        <p className="message success">{validationResult}</p>
+      )}
+    </div>
   );
 }
 

@@ -1,6 +1,8 @@
 import WordCard from "../WordCard/WordCard.tsx";
 import { useEffect, useState } from "react";
 import { type QuestWord } from "../../Api";
+import "./Cards.css";
+import "../Shared.css";
 
 export default function Cards({
   words,
@@ -18,12 +20,12 @@ export default function Cards({
   }, [words]);
 
   return (
-    <>
+    <div className="cards-container">
       {words.map((word, idx) => {
         return (
           <WordCard
             key={word.quest_word_idx}
-            wordDescription={word.position}
+            wordPosition={word.position}
             thisWordAnswer={answers[idx]}
             setThisWordAnswer={(answer: string) => {
               const newAnswers = [...answers];
@@ -34,6 +36,6 @@ export default function Cards({
         );
       })}
       <button onClick={() => onSubmitAnswers(answers)}>Отправить</button>
-    </>
+    </div>
   );
 }

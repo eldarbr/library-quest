@@ -1,0 +1,32 @@
+.App {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.App h2 {
+  text-align: center;
+  color: var(--text-color);
+}
+
+.message {
+  padding: 1rem;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: var(--error-color);
+  border: 1px solid var(--error-color);
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: var(--success-color);
+  border: 1px solid var(--success-color);
+}

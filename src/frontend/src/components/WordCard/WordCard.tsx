@@ -1,35 +1,43 @@
+import { type WordPosition } from "../../Api";
+import "./WordCard.css";
+import "../Shared.css";
+
 export default function WordCard({
-  wordDescription,
+  wordPosition,
   thisWordAnswer,
   setThisWordAnswer,
 }: {
-  wordDescription: WordDescription;
+  wordPosition: WordPosition;
   thisWordAnswer: string;
   setThisWordAnswer: (newAnswer: string) => void;
 }) {
   const maxAnswerLen = 20;
 
   return (
-    <>
-      <p>Книга: {wordDescription.book}</p>
-      <p>Страница: {wordDescription.page}</p>
-      <p>Строка: {wordDescription.line}</p>
-      <p>Слово: {wordDescription.word}</p>
+    <div className="word-card">
+      <div className="word-card-details">
+        <p>
+          Книга: <span>{wordPosition.book}</span>
+        </p>
+        <p>
+          Страница: <span>{wordPosition.page}</span>
+        </p>
+        <p>
+          Строка: <span>{wordPosition.line}</span>
+        </p>
+        <p>
+          Слово: <span>{wordPosition.word}</span>
+        </p>
+      </div>
       <>
         <input
           value={thisWordAnswer}
           onInput={(e) =>
             setThisWordAnswer(e.currentTarget.value.slice(0, maxAnswerLen))
           }
+          placeholder="Enter word here..."
         />
       </>
-    </>
+    </div>
   );
-}
-
-interface WordDescription {
-  book: string;
-  page: string;
-  line: string;
-  word: string;
 }

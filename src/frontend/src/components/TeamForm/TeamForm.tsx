@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../Shared.css";
 
 export default function TeamForm({
   onSubmitTeam,
@@ -9,7 +10,7 @@ export default function TeamForm({
   const teamIDMaxLen = 10;
 
   return (
-    <>
+    <div className="form-container">
       <input
         placeholder="team id"
         onChange={(data) => {
@@ -29,6 +30,6 @@ export default function TeamForm({
       >
         получить задание
       </button>
-    </>
+    </div>
   );
 }
