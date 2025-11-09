@@ -27,6 +27,7 @@ type QuestResponse struct {
 	QuestID *int64 `json:"quest_id"`
 
 	// words
+	// Required: true
 	Words []*QuestWord `json:"words"`
 }
 
@@ -58,8 +59,9 @@ func (m *QuestResponse) validateQuestID(formats strfmt.Registry) error {
 }
 
 func (m *QuestResponse) validateWords(formats strfmt.Registry) error {
-	if swag.IsZero(m.Words) { // not required
-		return nil
+
+	if err := validate.Required("words", "body", m.Words); err != nil {
+		return err
 	}
 
 	for i := 0; i < len(m.Words); i++ {

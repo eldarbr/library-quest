@@ -8,8 +8,10 @@ package models
 import (
 	"context"
 
+	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // WordPosition word position
@@ -19,23 +21,84 @@ type WordPosition struct {
 
 	// book
 	// Example: A31-1
-	Book string `json:"book,omitempty"`
+	// Required: true
+	Book *string `json:"book"`
 
 	// line
 	// Example: 15
-	Line string `json:"line,omitempty"`
+	// Required: true
+	Line *string `json:"line"`
 
 	// page
 	// Example: 42
-	Page string `json:"page,omitempty"`
+	// Required: true
+	Page *string `json:"page"`
 
 	// word
 	// Example: 3
-	Word string `json:"word,omitempty"`
+	// Required: true
+	Word *string `json:"word"`
 }
 
 // Validate validates this word position
 func (m *WordPosition) Validate(formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.validateBook(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateLine(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validatePage(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if err := m.validateWord(formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *WordPosition) validateBook(formats strfmt.Registry) error {
+
+	if err := validate.Required("book", "body", m.Book); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WordPosition) validateLine(formats strfmt.Registry) error {
+
+	if err := validate.Required("line", "body", m.Line); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WordPosition) validatePage(formats strfmt.Registry) error {
+
+	if err := validate.Required("page", "body", m.Page); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *WordPosition) validateWord(formats strfmt.Registry) error {
+
+	if err := validate.Required("word", "body", m.Word); err != nil {
+		return err
+	}
+
 	return nil
 }
 

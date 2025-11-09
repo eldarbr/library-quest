@@ -75,6 +75,7 @@ definitions:
     type: "object"
     required:
       - "quest_id"
+      - "words"
     properties:
       quest_id:
         type: "integer"
@@ -87,6 +88,9 @@ definitions:
 
   QuestWord:
     type: "object"
+    required:
+      - "quest_word_idx"
+      - "position"
     properties:
       quest_word_idx:
         type: "integer"
@@ -97,6 +101,11 @@ definitions:
 
   WordPosition:
     type: "object"
+    required:
+      - "book"
+      - "page"
+      - "line"
+      - "word"
     properties:
       book:
         type: "string"

@@ -12,6 +12,7 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
+	"github.com/go-openapi/validate"
 )
 
 // QuestWord quest word
@@ -20,11 +21,13 @@ import (
 type QuestWord struct {
 
 	// position
-	Position *WordPosition `json:"position,omitempty"`
+	// Required: true
+	Position *WordPosition `json:"position"`
 
 	// The zero-based index of this word within the quest's answer.
 	// Example: 0
-	QuestWordIdx int64 `json:"quest_word_idx,omitempty"`
+	// Required: true
+	QuestWordIdx *int64 `json:"quest_word_idx"`
 }
 
 // Validate validates this quest word
@@ -35,6 +38,10 @@ func (m *QuestWord) Validate(formats strfmt.Registry) error {
 		res = append(res, err)
 	}
 
+	if err := m.validateQuestWordIdx(formats); err != nil {
+		res = append(res, err)
+	}
+
 	if len(res) > 0 {
 		return errors.CompositeValidationError(res...)
 	}
@@ -42,8 +49,9 @@ func (m *QuestWord) Validate(formats strfmt.Registry) error {
 }
 
 func (m *QuestWord) validatePosition(formats strfmt.Registry) error {
-	if swag.IsZero(m.Position) { // not required
-		return nil
+
+	if err := validate.Required("position", "body", m.Position); err != nil {
+		return err
 	}
 
 	if m.Position != nil {
@@ -59,6 +67,15 @@ func (m *QuestWord) validatePosition(formats strfmt.Registry) error {
 
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (m *QuestWord) validateQuestWordIdx(formats strfmt.Registry) error {
+
+	if err := validate.Required("quest_word_idx", "body", m.QuestWordIdx); err != nil {
+		return err
 	}
 
 	return nil
@@ -81,10 +98,6 @@ func (m *QuestWord) ContextValidate(ctx context.Context, formats strfmt.Registry
 func (m *QuestWord) contextValidatePosition(ctx context.Context, formats strfmt.Registry) error {
 
 	if m.Position != nil {
-
-		if swag.IsZero(m.Position) { // not required
-			return nil
-		}
 
 		if err := m.Position.ContextValidate(ctx, formats); err != nil {
 			ve := new(errors.Validation)

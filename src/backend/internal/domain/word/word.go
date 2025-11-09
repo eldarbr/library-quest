@@ -3,7 +3,7 @@ package word
 type Word struct {
 	value        string
 	Position     Position
-	QuestWordIDx int
+	QuestWordIDx int64
 }
 
 type Position struct {
@@ -16,7 +16,7 @@ type Position struct {
 func NewWord(
 	value string,
 	position Position,
-	questWordIDx int,
+	questWordIDx int64,
 ) Word {
 	return Word{
 		value:        value,

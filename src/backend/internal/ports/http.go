@@ -93,12 +93,12 @@ func questToQuestResponse(ques quest.Quest) *models.QuestResponse {
 // wordToQuestWord converts a domain Word object to a generated QuestWord model.
 func wordToQuestWord(wor word.Word) *models.QuestWord {
 	return &models.QuestWord{
-		QuestWordIdx: int64(wor.QuestWordIDx),
+		QuestWordIdx: &wor.QuestWordIDx,
 		Position: &models.WordPosition{
-			Book: wor.Position.Book,
-			Page: wor.Position.Page,
-			Line: wor.Position.Line,
-			Word: wor.Position.Word,
+			Book: &wor.Position.Book,
+			Page: &wor.Position.Page,
+			Line: &wor.Position.Line,
+			Word: &wor.Position.Word,
 		},
 	}
 }

@@ -139,7 +139,8 @@ func init() {
     "QuestResponse": {
       "type": "object",
       "required": [
-        "quest_id"
+        "quest_id",
+        "words"
       ],
       "properties": {
         "quest_id": {
@@ -157,6 +158,10 @@ func init() {
     },
     "QuestWord": {
       "type": "object",
+      "required": [
+        "quest_word_idx",
+        "position"
+      ],
       "properties": {
         "position": {
           "$ref": "#/definitions/WordPosition"
@@ -217,6 +222,12 @@ func init() {
     },
     "WordPosition": {
       "type": "object",
+      "required": [
+        "book",
+        "page",
+        "line",
+        "word"
+      ],
       "properties": {
         "book": {
           "type": "string",
@@ -365,7 +376,8 @@ func init() {
     "QuestResponse": {
       "type": "object",
       "required": [
-        "quest_id"
+        "quest_id",
+        "words"
       ],
       "properties": {
         "quest_id": {
@@ -383,6 +395,10 @@ func init() {
     },
     "QuestWord": {
       "type": "object",
+      "required": [
+        "quest_word_idx",
+        "position"
+      ],
       "properties": {
         "position": {
           "$ref": "#/definitions/WordPosition"
@@ -443,6 +459,12 @@ func init() {
     },
     "WordPosition": {
       "type": "object",
+      "required": [
+        "book",
+        "page",
+        "line",
+        "word"
+      ],
       "properties": {
         "book": {
           "type": "string",

@@ -85,7 +85,7 @@ func readDataToMap(data map[int][]word.Word) map[int]quest.Quest {
 
 	for questID := range data {
 		slices.SortFunc(data[questID], func(a, b word.Word) int {
-			return a.QuestWordIDx - b.QuestWordIDx
+			return int(a.QuestWordIDx - b.QuestWordIDx)
 		})
 
 		que := quest.NewQuest(questID, data[questID])
@@ -119,7 +119,7 @@ func lineTokensToWord(lineTokens []string) (int, word.Word, error) {
 				Line: lineTokens[lineToken],
 				Word: lineTokens[wordInLineToken],
 			},
-			questWordIDX,
+			int64(questWordIDX),
 		),
 		nil
 }
