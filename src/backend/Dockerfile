@@ -22,4 +22,4 @@ WORKDIR /app
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/app/quest-api-server", "-f", "/app/words.txt", "--port", "8080" ]
+ENTRYPOINT [ "/app/quest-api-server", "-f", "words.txt", "--port", "8080", "--host", "0.0.0.0" ]

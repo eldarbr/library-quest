@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/go-openapi/loads"
 	flags "github.com/jessevdk/go-flags"
+	"github.com/rs/cors"
 
 	"github.com/eldarbr/library-quest/backend/generated/restapi"
 	"github.com/eldarbr/library-quest/backend/generated/restapi/operations"
@@ -18,7 +20,8 @@ import (
 )
 
 type options struct {
-	DBFilePath string `long:"db-file-path" short:"f" description:"Path to the tab-separated database file" required:"true"`
+	DBFilePath         string   `long:"db-file-path" short:"f" description:"Path to the tab-separated database file" required:"true"`
+	CORSAllowedOrigins []string `long:"cors-allowed-origins" description:"A list of allowed origins for CORS" required:"false"`
 }
 
 func main() {
@@ -93,6 +96,32 @@ func main() {
 	api.Version1PostAPIV1ValidateHandler = version1.PostAPIV1ValidateHandlerFunc(httpHandler.ValidateAnswer)
 
 	server.ConfigureAPI()
+
+	var allowedOrigins []string
+	if len(opts.CORSAllowedOrigins) > 0 {
+		allowedOrigins = opts.CORSAllowedOrigins
+	} else {
+		originsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
+		if originsStr != "" {
+			allowedOrigins = strings.Split(originsStr, ",")
+		}
+	}
+
+	if len(allowedOrigins) == 0 {
+		slog.Error("CORS allowed origins must be provided via --cors-allowed-origins flag or CORS_ALLOWED_ORIGINS env var")
+
+		return
+	}
+
+	corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   allowedOrigins,
+		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
+		AllowedHeaders:   []string{"Content-Type"},
+		AllowCredentials: true,
+	})
+
+	handler := corsOptions.Handler(api.Serve(nil))
+	server.SetHandler(handler)
 
 	if err := server.Serve(); err != nil {
 		slog.Error("server serve", slog.Any("err", err))
