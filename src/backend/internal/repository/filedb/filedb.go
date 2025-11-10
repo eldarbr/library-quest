@@ -78,10 +78,6 @@ func readData(fp string) (map[int]quest.Quest, error) {
 		dataRead[questID] = append(dataRead[questID], wordObj)
 	}
 
-	if len(dataRead) < quest.GetMinQuestCnt() {
-		return nil, ErrNotEnoughQuests
-	}
-
 	return readDataToMap(dataRead), nil
 }
 
@@ -127,4 +123,8 @@ func lineTokensToWord(lineTokens []string) (int, word.Word, error) {
 			int64(questWordIDX),
 		),
 		nil
+}
+
+func (db *FileToMemoDB) GetTotalQuestsCnt() int {
+	return len(db.quests)
 }

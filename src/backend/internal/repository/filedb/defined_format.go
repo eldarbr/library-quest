@@ -28,6 +28,5 @@ const (
 )
 
 var (
-	ErrTokensPerLine   = errors.New("wrong amount of tokens")
-	ErrNotEnoughQuests = errors.New("not enough quests defined")
+	ErrTokensPerLine = errors.New("wrong amount of tokens")
 )

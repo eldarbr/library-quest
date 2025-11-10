@@ -5,11 +5,16 @@ services:
     image: "traefik:v3.0"
     container_name: "traefik"
     command:
-      - "--api.insecure=true"
+      - "--api.dashboard=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:${TRAEFIK_WEB_PORT}"
       - "--log.level=INFO"
+    labels:
+      - "traefik.http.routers.traefik-dashboard.entrypoints=web"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+      - "traefik.http.routers.traefik-dashboard.middlewares=auth"
+      - "traefik.http.middlewares.auth.basicauth.users=user:${TRAEFIK_PWDD}"
     ports:
       - "${TRAEFIK_WEB_PORT}:${TRAEFIK_WEB_PORT}"
       - "${TRAEFIK_DASHBOARD_PORT}:8080"
@@ -26,6 +31,7 @@ services:
     environment:
       - CORS_ALLOWED_ORIGINS=${CORS_ORIGIN}
       - QUEST_KEYWORD=${QUEST_KEYWORD}
+      - QUEST_SHUFFLE_SEED=${QUEST_SHUFFLE_SEED}
     volumes:
       - ./conf/words.txt:/app/words.txt:ro
     networks:
@@ -37,7 +43,7 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8080"
       - "traefik.http.routers.backend.middlewares=api-ratelimit"
       - "traefik.http.middlewares.api-ratelimit.ratelimit.average=40"
-      - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=20"
+      - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=60"
 
   frontend:
     build:

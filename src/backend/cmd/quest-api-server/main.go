@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/go-openapi/loads"
@@ -29,6 +30,7 @@ type options struct {
 const (
 	envKeyCORS         = `CORS_ALLOWED_ORIGINS`
 	envKeyQuestKeyword = `QUEST_KEYWORD`
+	envKeyQuestsSeed   = `QUEST_SHUFFLE_SEED`
 )
 
 func main() {
@@ -54,36 +56,7 @@ func main() {
 	server := restapi.NewServer(api)
 	defer server.Shutdown()
 
-	parser := flags.NewParser(server, flags.Default)
-	parser.ShortDescription = "Quest API"
-	parser.LongDescription = "API for retrieving and validating team quests."
-
-	_, err = parser.AddGroup("Application Options", "Options for the application", &opts)
-	if err != nil {
-		slog.Error("parser add group", slog.Any("err", err))
-
-		return
-	}
-
-	server.ConfigureFlags()
-
-	for _, optsGroup := range api.CommandLineOptionsGroups {
-		_, err = parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
-		if err != nil {
-			slog.Error("parser add group", slog.Any("err", err))
-
-			return
-		}
-	}
-
-	if _, err = parser.Parse(); err != nil {
-		flagErr := &flags.Error{}
-		if errors.As(err, &flagErr) && flagErr.Type != flags.ErrHelp {
-			slog.Error("parse flags", slog.Any("err", flagErr))
-		}
-
-		return
-	}
+	parseFlags(server, api, &opts)
 
 	questRepo, err := filedb.NewFileToMemoDB(opts.DBFilePath)
 	if err != nil {
@@ -99,11 +72,26 @@ func main() {
 		return
 	}
 
-	application := app.NewApplication(quest.ConstantKeyworder{Keyword: questKeyword}, questRepo)
+	envSeed, envSeedPresent := os.LookupEnv(envKeyQuestsSeed)
+	if !envSeedPresent {
+		slog.Error("no seed to shuffle quests")
+		return
+	}
+	seed, err := strconv.Atoi(envSeed)
+	if err != nil {
+		slog.Error("parse shuffle seed", slog.Any("err", err))
+		return
+	}
+
+	randshuffler := quest.NewDeterminedTeamToQuestShuffler(questRepo.GetTotalQuestsCnt(), int64(seed))
+	application := app.NewApplication(quest.ConstantKeyworder{Keyword: questKeyword},
+		questRepo, randshuffler, randshuffler)
 	httpHandler := ports.NewHTTPHandler(application)
 
 	api.Version1GetAPIV1QuestHandler = version1.GetAPIV1QuestHandlerFunc(httpHandler.GetQuest)
+	api.Version1GetAPIV1QuestRandomHandler = version1.GetAPIV1QuestRandomHandlerFunc(httpHandler.GetRandomQuest)
 	api.Version1PostAPIV1ValidateHandler = version1.PostAPIV1ValidateHandlerFunc(httpHandler.ValidateAnswer)
+	api.Version1PostAPIV1ValidateRandomHandler = version1.PostAPIV1ValidateRandomHandlerFunc(httpHandler.ValidateAnswerRandom)
 
 	server.ConfigureAPI()
 
@@ -138,4 +126,34 @@ func applyCors(allowedOrigins []string, handler http.Handler) http.Handler {
 	handler = corsOptions.Handler(handler)
 
 	return handler
+}
+
+func parseFlags(server *restapi.Server, api *operations.QuestAPIAPI, opts *options) {
+	parser := flags.NewParser(server, flags.Default)
+	parser.ShortDescription = "Quest API"
+	parser.LongDescription = "API for retrieving and validating team quests."
+
+	_, err := parser.AddGroup("Application Options", "Options for the application", opts)
+	if err != nil {
+		slog.Error("parser add group", slog.Any("err", err))
+		os.Exit(1)
+	}
+
+	server.ConfigureFlags()
+
+	for _, optsGroup := range api.CommandLineOptionsGroups {
+		_, err = parser.AddGroup(optsGroup.ShortDescription, optsGroup.LongDescription, optsGroup.Options)
+		if err != nil {
+			slog.Error("parser add group", slog.Any("err", err))
+			os.Exit(1)
+		}
+	}
+
+	if _, err = parser.Parse(); err != nil {
+		flagErr := &flags.Error{}
+		if errors.As(err, &flagErr) && flagErr.Type != flags.ErrHelp {
+			slog.Error("parse flags", slog.Any("err", flagErr))
+			os.Exit(1)
+		}
+	}
 }

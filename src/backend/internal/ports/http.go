@@ -31,25 +31,67 @@ func (h *HTTPHandler) GetQuest(params version1.GetAPIV1QuestParams) middleware.R
 	if err != nil {
 		slog.Error("getting quest for team", slog.Int64("teamID", params.TeamID), slog.Any("err", err))
 
-		return version1.NewPostAPIV1ValidateInternalServerError().WithPayload(
+		return version1.NewGetAPIV1QuestInternalServerError().WithPayload(
 			&models.InternalServerError{Error: "internal server error"})
 	}
 
 	return version1.NewGetAPIV1QuestOK().WithPayload(questToQuestResponse(ques))
 }
 
-// ValidateAnswer handles the POST /api/v1/validate endpoint.
-func (h *HTTPHandler) ValidateAnswer(params version1.PostAPIV1ValidateParams) middleware.Responder {
+func (h *HTTPHandler) GetRandomQuest(params version1.GetAPIV1QuestRandomParams) middleware.Responder {
+	slog.Debug("GetRandomQuest received")
+
+	ques, err := h.app.Queries.GetRandomQuest(params.HTTPRequest.Context())
+	if err != nil {
+		slog.Error("getting random quest", slog.Any("err", err))
+
+		return version1.NewGetAPIV1QuestRandomInternalServerError().WithPayload(
+			&models.InternalServerError{Error: "internal server error"})
+	}
+
+	return version1.NewGetAPIV1QuestRandomOK().WithPayload(questToQuestResponse(ques))
+}
+
+func (h *HTTPHandler) ValidateAnswerRandom(params version1.PostAPIV1ValidateRandomParams) middleware.Responder {
 	slog.Debug(
-		"ValidateAnswer received", slog.Int64("teamID", *params.Body.TeamID), slog.Int64("questID", *params.Body.QuestID))
+		"ValidateAnswerRandom received", slog.Int64("questID", *params.Body.QuestID))
 
 	answer := command.Answer{
 		QuestID: int(*params.Body.QuestID),
-		TeamID:  int(*params.Body.TeamID),
 		Words:   params.Body.Answer,
 	}
 
-	keyword, err := h.app.Commands.ValidateAnswer(params.HTTPRequest.Context(), answer)
+	keyword, err := h.app.Commands.ValidateAnswerRandom(params.HTTPRequest.Context(), answer)
+
+	var wrongAnswerErr quest.WrongAnswerError
+	if errors.As(err, &wrongAnswerErr) {
+		return version1.NewPostAPIV1ValidateRandomBadRequest().WithPayload(&models.ValidationError{
+			Mistakes: wrongAnswerErr.Mistakes,
+		})
+	}
+
+	if err != nil {
+		slog.Error("validating answer", slog.Any("err", err))
+
+		return version1.NewPostAPIV1ValidateRandomInternalServerError().WithPayload(
+			&models.InternalServerError{Error: "internal server error"})
+	}
+
+	return version1.NewPostAPIV1ValidateRandomOK().WithPayload(&models.CorrectAnswerResponse{Keyword: keyword})
+}
+
+// ValidateAnswer handles the POST /api/v1/validate endpoint.
+func (h *HTTPHandler) ValidateAnswer(params version1.PostAPIV1ValidateParams) middleware.Responder {
+	slog.Debug(
+		"ValidateAnswer received", slog.Int64("teamID", *params.Body.TeamID),
+		slog.Int64("questID", *params.Body.AnswerValidation.QuestID))
+
+	answer := command.Answer{
+		QuestID: int(*params.Body.AnswerValidation.QuestID),
+		Words:   params.Body.AnswerValidation.Answer,
+	}
+
+	keyword, err := h.app.Commands.ValidateAnswer(params.HTTPRequest.Context(), int(*params.Body.TeamID), answer)
 
 	// Handle specific domain errors and map them to appropriate HTTP responses.
 	if errors.Is(err, command.ErrQuestIDMismatch) {

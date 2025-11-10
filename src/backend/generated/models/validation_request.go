@@ -7,6 +7,7 @@ package models
 
 import (
 	"context"
+	stderrors "errors"
 
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
@@ -19,15 +20,9 @@ import (
 // swagger:model ValidationRequest
 type ValidationRequest struct {
 
-	// answer
-	// Example: ["first_word","second_word","third_word"]
+	// answer validation
 	// Required: true
-	Answer []string `json:"answer"`
-
-	// quest id
-	// Example: 101
-	// Required: true
-	QuestID *int64 `json:"quest_id"`
+	AnswerValidation *ValidationBaseRequest `json:"answer_validation"`
 
 	// team id
 	// Example: 25
@@ -39,11 +34,7 @@ type ValidationRequest struct {
 func (m *ValidationRequest) Validate(formats strfmt.Registry) error {
 	var res []error
 
-	if err := m.validateAnswer(formats); err != nil {
-		res = append(res, err)
-	}
-
-	if err := m.validateQuestID(formats); err != nil {
+	if err := m.validateAnswerValidation(formats); err != nil {
 		res = append(res, err)
 	}
 
@@ -57,19 +48,25 @@ func (m *ValidationRequest) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *ValidationRequest) validateAnswer(formats strfmt.Registry) error {
+func (m *ValidationRequest) validateAnswerValidation(formats strfmt.Registry) error {
 
-	if err := validate.Required("answer", "body", m.Answer); err != nil {
+	if err := validate.Required("answer_validation", "body", m.AnswerValidation); err != nil {
 		return err
 	}
 
-	return nil
-}
+	if m.AnswerValidation != nil {
+		if err := m.AnswerValidation.Validate(formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("answer_validation")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("answer_validation")
+			}
 
-func (m *ValidationRequest) validateQuestID(formats strfmt.Registry) error {
-
-	if err := validate.Required("quest_id", "body", m.QuestID); err != nil {
-		return err
+			return err
+		}
 	}
 
 	return nil
@@ -84,8 +81,38 @@ func (m *ValidationRequest) validateTeamID(formats strfmt.Registry) error {
 	return nil
 }
 
-// ContextValidate validates this validation request based on context it is used
+// ContextValidate validate this validation request based on the context it is used
 func (m *ValidationRequest) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+	var res []error
+
+	if err := m.contextValidateAnswerValidation(ctx, formats); err != nil {
+		res = append(res, err)
+	}
+
+	if len(res) > 0 {
+		return errors.CompositeValidationError(res...)
+	}
+	return nil
+}
+
+func (m *ValidationRequest) contextValidateAnswerValidation(ctx context.Context, formats strfmt.Registry) error {
+
+	if m.AnswerValidation != nil {
+
+		if err := m.AnswerValidation.ContextValidate(ctx, formats); err != nil {
+			ve := new(errors.Validation)
+			if stderrors.As(err, &ve) {
+				return ve.ValidateName("answer_validation")
+			}
+			ce := new(errors.CompositeError)
+			if stderrors.As(err, &ce) {
+				return ce.ValidateName("answer_validation")
+			}
+
+			return err
+		}
+	}
+
 	return nil
 }
 

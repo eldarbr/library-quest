@@ -39,12 +39,7 @@ export interface WordPosition {
   word: string;
 }
 
-export interface ValidationRequest {
-  /**
-   * @format int64
-   * @example 25
-   */
-  team_id: number;
+export interface ValidationBaseRequest {
   /**
    * @format int64
    * @example 101
@@ -52,6 +47,15 @@ export interface ValidationRequest {
   quest_id: number;
   /** @example ["first_word","second_word","third_word"] */
   answer: string[];
+}
+
+export interface ValidationRequest {
+  /**
+   * @format int64
+   * @example 25
+   */
+  team_id: number;
+  answer_validation: ValidationBaseRequest;
 }
 
 export interface ValidationError {
@@ -368,6 +372,22 @@ export class Api<
       }),
 
     /**
+     * @description Fetches a random quest, including its ID and the words needed to solve it.
+     *
+     * @tags v1
+     * @name V1QuestRandomList
+     * @summary Retrieve a random quest details
+     * @request GET:/api/v1/quest/random
+     */
+    v1QuestRandomList: (params: RequestParams = {}) =>
+      this.request<QuestResponse, InternalServerError>({
+        path: `/api/v1/quest/random`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Submits an answer for a given quest and team ID for validation.
      *
      * @tags v1
@@ -381,6 +401,30 @@ export class Api<
         ValidationError | AuthorizationError | InternalServerError
       >({
         path: `/api/v1/validate`,
+        method: "POST",
+        body: body,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Submits an answer for a given quest for validation.
+     *
+     * @tags v1
+     * @name V1ValidateRandomCreate
+     * @summary Validate a random quest answer
+     * @request POST:/api/v1/validate/random
+     */
+    v1ValidateRandomCreate: (
+      body: ValidationBaseRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        CorrectAnswerResponse,
+        ValidationError | AuthorizationError | InternalServerError
+      >({
+        path: `/api/v1/validate/random`,
         method: "POST",
         body: body,
         type: ContentType.Json,

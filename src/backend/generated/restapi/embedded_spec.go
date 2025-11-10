@@ -64,6 +64,32 @@ func init() {
         }
       }
     },
+    "/api/v1/quest/random": {
+      "get": {
+        "description": "Fetches a random quest, including its ID and the words needed to solve it.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "v1"
+        ],
+        "summary": "Retrieve a random quest details",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of quest data.",
+            "schema": {
+              "$ref": "#/definitions/QuestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/validate": {
       "post": {
         "description": "Submits an answer for a given quest and team ID for validation.",
@@ -105,6 +131,52 @@ func init() {
             "description": "The team is not authorized to submit an answer for this quest.",
             "schema": {
               "$ref": "#/definitions/AuthorizationError"
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/validate/random": {
+      "post": {
+        "description": "Submits an answer for a given quest for validation.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "v1"
+        ],
+        "summary": "Validate a random quest answer",
+        "parameters": [
+          {
+            "description": "The validation payload containing the team, quest, and their answer.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ValidationBaseRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The provided answer is correct.",
+            "schema": {
+              "$ref": "#/definitions/CorrectAnswerResponse"
+            }
+          },
+          "400": {
+            "description": "The provided answer is incorrect. The response body contains the indices of the incorrect words.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
             }
           },
           "500": {
@@ -167,6 +239,7 @@ func init() {
       "type": "object",
       "properties": {
         "position": {
+          "x-omitempty": false,
           "$ref": "#/definitions/WordPosition"
         },
         "quest_word_idx": {
@@ -174,6 +247,31 @@ func init() {
           "type": "integer",
           "x-omitempty": false,
           "example": 0
+        }
+      }
+    },
+    "ValidationBaseRequest": {
+      "type": "object",
+      "required": [
+        "quest_id",
+        "answer"
+      ],
+      "properties": {
+        "answer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "first_word",
+            "second_word",
+            "third_word"
+          ]
+        },
+        "quest_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 101
         }
       }
     },
@@ -197,25 +295,11 @@ func init() {
       "type": "object",
       "required": [
         "team_id",
-        "quest_id",
-        "answer"
+        "answer_validation"
       ],
       "properties": {
-        "answer": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "example": [
-            "first_word",
-            "second_word",
-            "third_word"
-          ]
-        },
-        "quest_id": {
-          "type": "integer",
-          "format": "int64",
-          "example": 101
+        "answer_validation": {
+          "$ref": "#/definitions/ValidationBaseRequest"
         },
         "team_id": {
           "type": "integer",
@@ -303,6 +387,32 @@ func init() {
         }
       }
     },
+    "/api/v1/quest/random": {
+      "get": {
+        "description": "Fetches a random quest, including its ID and the words needed to solve it.",
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "v1"
+        ],
+        "summary": "Retrieve a random quest details",
+        "responses": {
+          "200": {
+            "description": "Successful retrieval of quest data.",
+            "schema": {
+              "$ref": "#/definitions/QuestResponse"
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
     "/api/v1/validate": {
       "post": {
         "description": "Submits an answer for a given quest and team ID for validation.",
@@ -344,6 +454,52 @@ func init() {
             "description": "The team is not authorized to submit an answer for this quest.",
             "schema": {
               "$ref": "#/definitions/AuthorizationError"
+            }
+          },
+          "500": {
+            "description": "Internal server error.",
+            "schema": {
+              "$ref": "#/definitions/InternalServerError"
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/validate/random": {
+      "post": {
+        "description": "Submits an answer for a given quest for validation.",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "tags": [
+          "v1"
+        ],
+        "summary": "Validate a random quest answer",
+        "parameters": [
+          {
+            "description": "The validation payload containing the team, quest, and their answer.",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/ValidationBaseRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The provided answer is correct.",
+            "schema": {
+              "$ref": "#/definitions/CorrectAnswerResponse"
+            }
+          },
+          "400": {
+            "description": "The provided answer is incorrect. The response body contains the indices of the incorrect words.",
+            "schema": {
+              "$ref": "#/definitions/ValidationError"
             }
           },
           "500": {
@@ -406,6 +562,7 @@ func init() {
       "type": "object",
       "properties": {
         "position": {
+          "x-omitempty": false,
           "$ref": "#/definitions/WordPosition"
         },
         "quest_word_idx": {
@@ -413,6 +570,31 @@ func init() {
           "type": "integer",
           "x-omitempty": false,
           "example": 0
+        }
+      }
+    },
+    "ValidationBaseRequest": {
+      "type": "object",
+      "required": [
+        "quest_id",
+        "answer"
+      ],
+      "properties": {
+        "answer": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "example": [
+            "first_word",
+            "second_word",
+            "third_word"
+          ]
+        },
+        "quest_id": {
+          "type": "integer",
+          "format": "int64",
+          "example": 101
         }
       }
     },
@@ -436,25 +618,11 @@ func init() {
       "type": "object",
       "required": [
         "team_id",
-        "quest_id",
-        "answer"
+        "answer_validation"
       ],
       "properties": {
-        "answer": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "example": [
-            "first_word",
-            "second_word",
-            "third_word"
-          ]
-        },
-        "quest_id": {
-          "type": "integer",
-          "format": "int64",
-          "example": 101
+        "answer_validation": {
+          "$ref": "#/definitions/ValidationBaseRequest"
         },
         "team_id": {
           "type": "integer",

@@ -50,10 +50,22 @@ func NewQuestAPIAPI(spec *loads.Document) *QuestAPIAPI {
 			return middleware.NotImplemented("operation version1.GetAPIV1Quest has not yet been implemented")
 		}),
 
+		Version1GetAPIV1QuestRandomHandler: version1.GetAPIV1QuestRandomHandlerFunc(func(params version1.GetAPIV1QuestRandomParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation version1.GetAPIV1QuestRandom has not yet been implemented")
+		}),
+
 		Version1PostAPIV1ValidateHandler: version1.PostAPIV1ValidateHandlerFunc(func(params version1.PostAPIV1ValidateParams) middleware.Responder {
 			_ = params
 
 			return middleware.NotImplemented("operation version1.PostAPIV1Validate has not yet been implemented")
+		}),
+
+		Version1PostAPIV1ValidateRandomHandler: version1.PostAPIV1ValidateRandomHandlerFunc(func(params version1.PostAPIV1ValidateRandomParams) middleware.Responder {
+			_ = params
+
+			return middleware.NotImplemented("operation version1.PostAPIV1ValidateRandom has not yet been implemented")
 		}),
 	}
 }
@@ -93,8 +105,12 @@ type QuestAPIAPI struct {
 
 	// Version1GetAPIV1QuestHandler sets the operation handler for the get API v1 quest operation
 	Version1GetAPIV1QuestHandler version1.GetAPIV1QuestHandler
+	// Version1GetAPIV1QuestRandomHandler sets the operation handler for the get API v1 quest random operation
+	Version1GetAPIV1QuestRandomHandler version1.GetAPIV1QuestRandomHandler
 	// Version1PostAPIV1ValidateHandler sets the operation handler for the post API v1 validate operation
 	Version1PostAPIV1ValidateHandler version1.PostAPIV1ValidateHandler
+	// Version1PostAPIV1ValidateRandomHandler sets the operation handler for the post API v1 validate random operation
+	Version1PostAPIV1ValidateRandomHandler version1.PostAPIV1ValidateRandomHandler
 
 	// ServeError is called when an error is received, there is a default handler
 	// but you can set your own with this
@@ -175,8 +191,14 @@ func (o *QuestAPIAPI) Validate() error {
 	if o.Version1GetAPIV1QuestHandler == nil {
 		unregistered = append(unregistered, "version1.GetAPIV1QuestHandler")
 	}
+	if o.Version1GetAPIV1QuestRandomHandler == nil {
+		unregistered = append(unregistered, "version1.GetAPIV1QuestRandomHandler")
+	}
 	if o.Version1PostAPIV1ValidateHandler == nil {
 		unregistered = append(unregistered, "version1.PostAPIV1ValidateHandler")
+	}
+	if o.Version1PostAPIV1ValidateRandomHandler == nil {
+		unregistered = append(unregistered, "version1.PostAPIV1ValidateRandomHandler")
 	}
 
 	if len(unregistered) > 0 {
@@ -272,10 +294,18 @@ func (o *QuestAPIAPI) initHandlerCache() {
 		o.handlers["GET"] = make(map[string]http.Handler)
 	}
 	o.handlers["GET"]["/api/v1/quest"] = version1.NewGetAPIV1Quest(o.context, o.Version1GetAPIV1QuestHandler)
+	if o.handlers["GET"] == nil {
+		o.handlers["GET"] = make(map[string]http.Handler)
+	}
+	o.handlers["GET"]["/api/v1/quest/random"] = version1.NewGetAPIV1QuestRandom(o.context, o.Version1GetAPIV1QuestRandomHandler)
 	if o.handlers["POST"] == nil {
 		o.handlers["POST"] = make(map[string]http.Handler)
 	}
 	o.handlers["POST"]["/api/v1/validate"] = version1.NewPostAPIV1Validate(o.context, o.Version1PostAPIV1ValidateHandler)
+	if o.handlers["POST"] == nil {
+		o.handlers["POST"] = make(map[string]http.Handler)
+	}
+	o.handlers["POST"]["/api/v1/validate/random"] = version1.NewPostAPIV1ValidateRandom(o.context, o.Version1PostAPIV1ValidateRandomHandler)
 }
 
 // Serve creates a http handler to serve the API over HTTP

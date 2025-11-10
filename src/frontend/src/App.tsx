@@ -1,5 +1,4 @@
-import { useState } from "react";
-import TeamForm from "./components/TeamForm/TeamForm";
+import { useEffect, useState } from "react";
 import {
   Api,
   type QuestResponse,
@@ -9,6 +8,11 @@ import {
 } from "./Api.ts";
 import Cards from "./components/Cards/Cards.tsx";
 import "./App.css";
+import ShowDiscoveredResult from "./components/DiscoveredResult/DiscoveredResult.tsx";
+
+const api = new Api({
+  baseUrl: window.config.API_BASE_URL,
+});
 
 function App() {
   const [questData, setQuestData] = useState<QuestResponse | null>(null);
@@ -18,30 +22,14 @@ function App() {
   const [validationMistakes, setValidationMistakes] = useState<string[] | null>(
     null
   );
-  const [questTeamID, setQuestTeamID] = useState<number | null>(null);
-
-  const api = new Api({
-    baseUrl: window.config.API_BASE_URL,
-  });
-
-  const handleFetchQuest = async (teamId: number) => {
-    try {
-      const data = await api.api.v1QuestList({ team_id: teamId });
-      setQuestData(data.data);
-      setQuestTeamID(teamId);
-    } catch (e) {
-      console.log(e);
-    }
-  };
 
   const handleValidate = async (answers: string[]) => {
-    if (questTeamID === null || questData === null) {
+    if (questData === null) {
       console.log("validate called before get quest request");
       return;
     }
     try {
-      const res = await api.api.v1ValidateCreate({
-        team_id: questTeamID,
+      const res = await api.api.v1ValidateRandomCreate({
         answer: answers.map((ans) => ans.toLowerCase()),
         quest_id: questData?.quest_id,
       });
@@ -52,10 +40,22 @@ function App() {
     }
   };
 
+  // load random quest
+  useEffect(() => {
+    const handleFetchQuest = async () => {
+      try {
+        const data = await api.api.v1QuestRandomList();
+        setQuestData(data.data);
+      } catch (err) {
+        setValidationMistakes([String(err)]);
+      }
+    };
+    handleFetchQuest();
+  }, []);
+
   return (
     <div className="App">
       <h1>Library quest 🐣</h1>
-      {questData === null && <TeamForm onSubmitTeam={handleFetchQuest} />}
       {questData !== null && discoveredQuestKeyword === null && (
         <Cards
           words={questData.words}
@@ -64,40 +64,12 @@ function App() {
         />
       )}
       {validationMistakes !== null && (
-        <p className="message error">
-          Ошибки в словах: {validationMistakes.join(", ")}
-        </p>
+        <p className="message error">Ошибки: {validationMistakes.join(", ")}</p>
       )}
       {discoveredQuestKeyword !== null && (
         <ShowDiscoveredResult discoveredQuestKeyword={discoveredQuestKeyword} />
       )}
     </div>
-  );
-}
-
-function ShowDiscoveredResult({
-  discoveredQuestKeyword,
-}: {
-  discoveredQuestKeyword: string;
-}) {
-  const [buttonStyle, setButtonStyle] = useState<object | undefined>(undefined);
-  const colorSwitchTimeout = 500;
-
-  return (
-    <>
-      <p>Ответ для формы (нажми, чтобы скопировать):</p>
-      <button
-        className="message success"
-        style={buttonStyle}
-        onClick={() => {
-          setButtonStyle({ backgroundColor: "#fff" });
-          navigator.clipboard.writeText(discoveredQuestKeyword);
-          setTimeout(() => setButtonStyle(undefined), colorSwitchTimeout);
-        }}
-      >
-        {discoveredQuestKeyword}
-      </button>
-    </>
   );
 }
 

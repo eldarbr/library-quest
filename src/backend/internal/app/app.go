@@ -11,9 +11,11 @@ type Application struct {
 	Commands command.Commands
 }
 
-func NewApplication(validationKeyworder command.KeywordProvider, questRepo quest.Repository) Application {
+func NewApplication(validationKeyworder command.KeywordProvider, questRepo quest.Repository,
+	shuffler quest.QuestShuffler, randomer quest.RandomQuestShuffler,
+) Application {
 	return Application{
-		Queries:  query.NewQuery(questRepo),
-		Commands: command.NewCommands(validationKeyworder, questRepo),
+		Queries:  query.NewQuery(questRepo, shuffler, randomer),
+		Commands: command.NewCommands(validationKeyworder, questRepo, shuffler),
 	}
 }

@@ -1,22 +1,41 @@
 package quest
 
-var (
-	questIDPattern = []int{2, 3, 5, 9, 0, 7, 6, 1, 4, 8}
-	minQuestCnt    = len(questIDPattern)
-)
+import "math/rand"
 
-func init() {
-	if minQuestCnt < 1 {
-		panic("wrong quest pattern")
+type QuestShuffler interface {
+	DetermineQuestForTeam(teamID int) int
+}
+
+type RandomQuestShuffler interface {
+	GetRandomQuestID() int
+}
+
+type DeterminedTeamToQuestShuffler struct {
+	questIDPattern []int
+	seed           int64
+	rngd           *rand.Rand
+}
+
+func NewDeterminedTeamToQuestShuffler(numQuests int, seed int64) DeterminedTeamToQuestShuffler {
+	quests := make([]int, 0, numQuests)
+	for i := range numQuests {
+		quests = append(quests, i)
 	}
+
+	rngd := rand.New(rand.NewSource(seed))
+	rngd.Shuffle(numQuests, func(i, j int) {
+		quests[i], quests[j] = quests[j], quests[i]
+	})
+
+	return DeterminedTeamToQuestShuffler{questIDPattern: quests, seed: seed, rngd: rngd}
 }
 
-func DetermineQuestForTeam(teamID int) int {
-	return questIDPattern[teamID%len(questIDPattern)]
+func (dttqs DeterminedTeamToQuestShuffler) DetermineQuestForTeam(teamID int) int {
+	return dttqs.questIDPattern[teamID%len(dttqs.questIDPattern)]
 }
 
-func GetMinQuestCnt() int {
-	return minQuestCnt
+func (dttqs DeterminedTeamToQuestShuffler) GetRandomQuestID() int {
+	return dttqs.rngd.Intn(len(dttqs.questIDPattern))
 }
 
 type ConstantKeyworder struct {
