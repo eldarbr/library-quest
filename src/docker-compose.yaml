@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: "traefik:v3.0"
+    container_name: "traefik"
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:9980"
+    ports:
+      - "9980:9980" # Web traffic
+      - "8989:8989" # Traefik dashboard
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    networks:
+      - quest-net
+
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+    container_name: "quest-backend"
+    volumes:
+      - ./conf/words.txt:/app/words.txt:ro
+    networks:
+      - quest-net
+    labels:
+      - "traefik.enable=true"
+      # Router for the API
+      - "traefik.http.routers.backend.rule=Host(`localhost`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      # Define the service to forward traffic to
+      - "traefik.http.services.backend.loadbalancer.server.port=8080"
+      # Middleware: Define a rate limit for the API
+      - "traefik.http.routers.backend.middlewares=api-ratelimit"
+      - "traefik.http.middlewares.api-ratelimit.ratelimit.average=40"
+      - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=20"
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    container_name: "quest-frontend"
+    networks:
+      - quest-net
+    volumes:
+      - ./conf/config.js:/usr/share/nginx/html/config.js:ro
+    labels:
+      - "traefik.enable=true"
+      # Router for the frontend (catches all other traffic)
+      - "traefik.http.routers.frontend.rule=Host(`localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      # Define the service to forward traffic to
+      - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+
+networks:
+  quest-net:
+    driver: bridge
