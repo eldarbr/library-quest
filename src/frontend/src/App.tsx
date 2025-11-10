@@ -12,7 +12,9 @@ import "./App.css";
 
 function App() {
   const [questData, setQuestData] = useState<QuestResponse | null>(null);
-  const [validationResult, setValidationResult] = useState<string | null>(null);
+  const [discoveredQuestKeyword, setdiscoveredQuestKeyword] = useState<
+    string | null
+  >(null);
   const [validationMistakes, setValidationMistakes] = useState<string[] | null>(
     null
   );
@@ -38,13 +40,13 @@ function App() {
       return;
     }
     try {
-      await api.api.v1ValidateCreate({
+      const res = await api.api.v1ValidateCreate({
         team_id: questTeamID,
         answer: answers.map((ans) => ans.toLowerCase()),
         quest_id: questData?.quest_id,
       });
       setValidationMistakes(null);
-      setValidationResult(`Квест выполнен: комада ${questTeamID}`);
+      setdiscoveredQuestKeyword(res.data.keyword);
     } catch (e) {
       handleValidationError(e, setValidationMistakes);
     }
@@ -52,9 +54,9 @@ function App() {
 
   return (
     <div className="App">
-      <h1>Library quest</h1>
+      <h1>Library quest 🐣</h1>
       {questData === null && <TeamForm onSubmitTeam={handleFetchQuest} />}
-      {questData !== null && validationResult === null && (
+      {questData !== null && discoveredQuestKeyword === null && (
         <Cards
           words={questData.words}
           mistakes={validationMistakes}
@@ -66,13 +68,36 @@ function App() {
           Ошибки в словах: {validationMistakes.join(", ")}
         </p>
       )}
-      {validationResult !== null && (
-        <>
-          <p className="message success">{validationResult}</p>
-          <p>Не забудь сделать скриншот!!</p>
-        </>
+      {discoveredQuestKeyword !== null && (
+        <ShowDiscoveredResult discoveredQuestKeyword={discoveredQuestKeyword} />
       )}
     </div>
+  );
+}
+
+function ShowDiscoveredResult({
+  discoveredQuestKeyword,
+}: {
+  discoveredQuestKeyword: string;
+}) {
+  const [buttonStyle, setButtonStyle] = useState<object | undefined>(undefined);
+  const colorSwitchTimeout = 500;
+
+  return (
+    <>
+      <p>Ответ для формы (нажми, чтобы скопировать):</p>
+      <button
+        className="message success"
+        style={buttonStyle}
+        onClick={() => {
+          setButtonStyle({ backgroundColor: "#fff" });
+          navigator.clipboard.writeText(discoveredQuestKeyword);
+          setTimeout(() => setButtonStyle(undefined), colorSwitchTimeout);
+        }}
+      >
+        {discoveredQuestKeyword}
+      </button>
+    </>
   );
 }
 

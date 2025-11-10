@@ -13,7 +13,6 @@ import (
 	"github.com/go-openapi/errors"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-	"github.com/go-openapi/validate"
 )
 
 // QuestResponse quest response
@@ -23,21 +22,15 @@ type QuestResponse struct {
 
 	// quest id
 	// Example: 101
-	// Required: true
-	QuestID *int64 `json:"quest_id"`
+	QuestID int64 `json:"quest_id"`
 
 	// words
-	// Required: true
 	Words []*QuestWord `json:"words"`
 }
 
 // Validate validates this quest response
 func (m *QuestResponse) Validate(formats strfmt.Registry) error {
 	var res []error
-
-	if err := m.validateQuestID(formats); err != nil {
-		res = append(res, err)
-	}
 
 	if err := m.validateWords(formats); err != nil {
 		res = append(res, err)
@@ -49,19 +42,9 @@ func (m *QuestResponse) Validate(formats strfmt.Registry) error {
 	return nil
 }
 
-func (m *QuestResponse) validateQuestID(formats strfmt.Registry) error {
-
-	if err := validate.Required("quest_id", "body", m.QuestID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (m *QuestResponse) validateWords(formats strfmt.Registry) error {
-
-	if err := validate.Required("words", "body", m.Words); err != nil {
-		return err
+	if swag.IsZero(m.Words) { // not required
+		return nil
 	}
 
 	for i := 0; i < len(m.Words); i++ {

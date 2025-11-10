@@ -56,7 +56,7 @@ paths:
         "200":
           description: "The provided answer is correct."
           schema:
-            type: "object"
+            $ref: "#/definitions/CorrectAnswerResponse"
         "400":
           description: "The provided answer is incorrect. The response body contains the indices of the incorrect words."
           schema:
@@ -73,52 +73,60 @@ paths:
 definitions:
   QuestResponse:
     type: "object"
-    required:
-      - "quest_id"
-      - "words"
+    # required:
+    #   - "quest_id"
+    #   - "words"
     properties:
       quest_id:
         type: "integer"
         format: "int64"
         example: 101
+        x-omitempty: false
       words:
         type: "array"
+        x-omitempty: false
         items:
           $ref: "#/definitions/QuestWord"
 
   QuestWord:
     type: "object"
-    required:
-      - "quest_word_idx"
-      - "position"
+    # required:
+    #   - "quest_word_idx"
+    #   - "position"
     properties:
       quest_word_idx:
         type: "integer"
         description: "The zero-based index of this word within the quest's answer."
         example: 0
+        x-omitempty: false
       position:
         $ref: "#/definitions/WordPosition"
+        x-omitempty: false
 
   WordPosition:
     type: "object"
-    required:
-      - "book"
-      - "page"
-      - "line"
-      - "word"
+    # required:
+    #   - "book"
+    #   - "page"
+    #   - "line"
+    #   - "word"
     properties:
       book:
         type: "string"
         example: "A31-1"
+        x-omitempty: false
       page:
         type: "string"
         example: "42"
+        x-omitempty: false
       line:
         type: "string"
         example: "15"
+        x-omitempty: false
       word:
         type: "string"
         example: "3"
+        x-omitempty: false
 
   ValidationRequest:
     type: "object"
@@ -163,3 +171,12 @@ definitions:
       error:
         type: "string"
         example: "internal server error"
+
+  CorrectAnswerResponse:
+    type: "object"
+    # required:
+    #   - "keyword"
+    properties:
+      keyword:
+        type: "string"
+        x-omitempty: false

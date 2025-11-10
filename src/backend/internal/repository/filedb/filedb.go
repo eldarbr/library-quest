@@ -2,6 +2,7 @@ package filedb
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log/slog"
 	"os"
@@ -17,6 +18,10 @@ import (
 type FileToMemoDB struct {
 	quests map[int]quest.Quest
 }
+
+var (
+	ErrInvalidPath = errors.New("invalid path")
+)
 
 func NewFileToMemoDB(fp string) (*FileToMemoDB, error) {
 	data, err := readData(fp)
@@ -35,7 +40,7 @@ func readData(fp string) (map[int]quest.Quest, error) {
 
 	fp = filepath.Join(basePath, filepath.Clean(fp))
 	if !strings.HasPrefix(fp, basePath) {
-		return nil, fmt.Errorf("invalid path")
+		return nil, ErrInvalidPath
 	}
 
 	f, err := os.Open(fp)

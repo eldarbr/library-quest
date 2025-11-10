@@ -25,6 +25,7 @@ services:
     container_name: "quest-backend"
     environment:
       - CORS_ALLOWED_ORIGINS=${CORS_ORIGIN}
+      - QUEST_KEYWORD=${QUEST_KEYWORD}
     volumes:
       - ./conf/words.txt:/app/words.txt:ro
     networks:

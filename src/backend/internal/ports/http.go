@@ -49,7 +49,7 @@ func (h *HTTPHandler) ValidateAnswer(params version1.PostAPIV1ValidateParams) mi
 		Words:   params.Body.Answer,
 	}
 
-	err := h.app.Commands.ValidateAnswer(params.HTTPRequest.Context(), answer)
+	keyword, err := h.app.Commands.ValidateAnswer(params.HTTPRequest.Context(), answer)
 
 	// Handle specific domain errors and map them to appropriate HTTP responses.
 	if errors.Is(err, command.ErrQuestIDMismatch) {
@@ -72,7 +72,7 @@ func (h *HTTPHandler) ValidateAnswer(params version1.PostAPIV1ValidateParams) mi
 			&models.InternalServerError{Error: "internal server error"})
 	}
 
-	return version1.NewPostAPIV1ValidateOK()
+	return version1.NewPostAPIV1ValidateOK().WithPayload(&models.CorrectAnswerResponse{Keyword: keyword})
 }
 
 // questToQuestResponse converts a domain Quest object to a generated QuestResponse model.
@@ -82,10 +82,8 @@ func questToQuestResponse(ques quest.Quest) *models.QuestResponse {
 		respWords[i] = wordToQuestWord(w)
 	}
 
-	questID := int64(ques.GetID())
-
 	return &models.QuestResponse{
-		QuestID: &questID,
+		QuestID: int64(ques.GetID()),
 		Words:   respWords,
 	}
 }
@@ -93,12 +91,12 @@ func questToQuestResponse(ques quest.Quest) *models.QuestResponse {
 // wordToQuestWord converts a domain Word object to a generated QuestWord model.
 func wordToQuestWord(wor word.Word) *models.QuestWord {
 	return &models.QuestWord{
-		QuestWordIdx: &wor.QuestWordIDx,
+		QuestWordIdx: wor.QuestWordIDx,
 		Position: &models.WordPosition{
-			Book: &wor.Position.Book,
-			Page: &wor.Position.Page,
-			Line: &wor.Position.Line,
-			Word: &wor.Position.Word,
+			Book: wor.Position.Book,
+			Page: wor.Position.Page,
+			Line: wor.Position.Line,
+			Word: wor.Position.Word,
 		},
 	}
 }

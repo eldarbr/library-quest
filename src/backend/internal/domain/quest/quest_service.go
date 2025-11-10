@@ -18,3 +18,11 @@ func DetermineQuestForTeam(teamID int) int {
 func GetMinQuestCnt() int {
 	return minQuestCnt
 }
+
+type ConstantKeyworder struct {
+	Keyword string
+}
+
+func (kw ConstantKeyworder) GetKeyword() string {
+	return kw.Keyword
+}

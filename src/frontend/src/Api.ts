@@ -72,6 +72,10 @@ export interface InternalServerError {
   error?: string;
 }
 
+export interface CorrectAnswerResponse {
+  keyword: string;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
@@ -373,7 +377,7 @@ export class Api<
      */
     v1ValidateCreate: (body: ValidationRequest, params: RequestParams = {}) =>
       this.request<
-        object,
+        CorrectAnswerResponse,
         ValidationError | AuthorizationError | InternalServerError
       >({
         path: `/api/v1/validate`,

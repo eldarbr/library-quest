@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"net/http"
 	"os"
 	"strings"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/eldarbr/library-quest/backend/generated/restapi/operations"
 	"github.com/eldarbr/library-quest/backend/generated/restapi/operations/version1"
 	"github.com/eldarbr/library-quest/backend/internal/app"
+	"github.com/eldarbr/library-quest/backend/internal/domain/quest"
 	"github.com/eldarbr/library-quest/backend/internal/ports"
 	"github.com/eldarbr/library-quest/backend/internal/repository/filedb"
 )
@@ -23,6 +25,11 @@ type options struct {
 	DBFilePath         string   `long:"db-file-path" short:"f" description:"Path to the tab-separated database file" required:"true"`
 	CORSAllowedOrigins []string `long:"cors-allowed-origins" description:"A list of allowed origins for CORS" required:"false"`
 }
+
+const (
+	envKeyCORS         = `CORS_ALLOWED_ORIGINS`
+	envKeyQuestKeyword = `QUEST_KEYWORD`
+)
 
 func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
@@ -70,16 +77,12 @@ func main() {
 	}
 
 	if _, err = parser.Parse(); err != nil {
-		code := 1
-
 		flagErr := &flags.Error{}
-		if errors.As(err, &flagErr) {
-			if flagErr.Type == flags.ErrHelp {
-				code = 0
-			}
+		if errors.As(err, &flagErr) && flagErr.Type != flags.ErrHelp {
+			slog.Error("parse flags", slog.Any("err", flagErr))
 		}
 
-		os.Exit(code)
+		return
 	}
 
 	questRepo, err := filedb.NewFileToMemoDB(opts.DBFilePath)
@@ -89,7 +92,14 @@ func main() {
 		return
 	}
 
-	application := app.NewApplication(questRepo)
+	questKeyword, questKeywordPresent := os.LookupEnv(envKeyQuestKeyword)
+	if !questKeywordPresent {
+		slog.Error("no quest keyword provided")
+
+		return
+	}
+
+	application := app.NewApplication(quest.ConstantKeyworder{Keyword: questKeyword}, questRepo)
 	httpHandler := ports.NewHTTPHandler(application)
 
 	api.Version1GetAPIV1QuestHandler = version1.GetAPIV1QuestHandlerFunc(httpHandler.GetQuest)
@@ -97,14 +107,9 @@ func main() {
 
 	server.ConfigureAPI()
 
-	var allowedOrigins []string
-	if len(opts.CORSAllowedOrigins) > 0 {
-		allowedOrigins = opts.CORSAllowedOrigins
-	} else {
-		originsStr := os.Getenv("CORS_ALLOWED_ORIGINS")
-		if originsStr != "" {
-			allowedOrigins = strings.Split(originsStr, ",")
-		}
+	allowedOrigins := opts.CORSAllowedOrigins
+	if envCors, present := os.LookupEnv(envKeyCORS); len(opts.CORSAllowedOrigins) <= 0 && present {
+		allowedOrigins = strings.Split(envCors, ",")
 	}
 
 	if len(allowedOrigins) == 0 {
@@ -113,6 +118,16 @@ func main() {
 		return
 	}
 
+	server.SetHandler(applyCors(allowedOrigins, api.Serve(nil)))
+
+	if err := server.Serve(); err != nil {
+		slog.Error("server serve", slog.Any("err", err))
+
+		return
+	}
+}
+
+func applyCors(allowedOrigins []string, handler http.Handler) http.Handler {
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   allowedOrigins,
 		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
@@ -120,12 +135,7 @@ func main() {
 		AllowCredentials: true,
 	})
 
-	handler := corsOptions.Handler(api.Serve(nil))
-	server.SetHandler(handler)
+	handler = corsOptions.Handler(handler)
 
-	if err := server.Serve(); err != nil {
-		slog.Error("server serve", slog.Any("err", err))
-
-		return
-	}
+	return handler
 }

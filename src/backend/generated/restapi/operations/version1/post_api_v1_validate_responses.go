@@ -26,7 +26,7 @@ type PostAPIV1ValidateOK struct {
 	/*
 	  In: Body
 	*/
-	Payload any `json:"body,omitempty"`
+	Payload *models.CorrectAnswerResponse `json:"body,omitempty"`
 }
 
 // NewPostAPIV1ValidateOK creates PostAPIV1ValidateOK with default headers values
@@ -36,13 +36,13 @@ func NewPostAPIV1ValidateOK() *PostAPIV1ValidateOK {
 }
 
 // WithPayload adds the payload to the post Api v1 validate o k response
-func (o *PostAPIV1ValidateOK) WithPayload(payload any) *PostAPIV1ValidateOK {
+func (o *PostAPIV1ValidateOK) WithPayload(payload *models.CorrectAnswerResponse) *PostAPIV1ValidateOK {
 	o.Payload = payload
 	return o
 }
 
 // SetPayload sets the payload to the post Api v1 validate o k response
-func (o *PostAPIV1ValidateOK) SetPayload(payload any) {
+func (o *PostAPIV1ValidateOK) SetPayload(payload *models.CorrectAnswerResponse) {
 	o.Payload = payload
 }
 
@@ -50,9 +50,11 @@ func (o *PostAPIV1ValidateOK) SetPayload(payload any) {
 func (o *PostAPIV1ValidateOK) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
 
 	rw.WriteHeader(200)
-	payload := o.Payload
-	if err := producer.Produce(rw, payload); err != nil {
-		panic(err) // let the recovery middleware deal with this
+	if o.Payload != nil {
+		payload := o.Payload
+		if err := producer.Produce(rw, payload); err != nil {
+			panic(err) // let the recovery middleware deal with this
+		}
 	}
 }
 

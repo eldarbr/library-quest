@@ -92,7 +92,7 @@ func init() {
           "200": {
             "description": "The provided answer is correct.",
             "schema": {
-              "type": "object"
+              "$ref": "#/definitions/CorrectAnswerResponse"
             }
           },
           "400": {
@@ -127,6 +127,15 @@ func init() {
         }
       }
     },
+    "CorrectAnswerResponse": {
+      "type": "object",
+      "properties": {
+        "keyword": {
+          "type": "string",
+          "x-omitempty": false
+        }
+      }
+    },
     "InternalServerError": {
       "type": "object",
       "properties": {
@@ -138,30 +147,24 @@ func init() {
     },
     "QuestResponse": {
       "type": "object",
-      "required": [
-        "quest_id",
-        "words"
-      ],
       "properties": {
         "quest_id": {
           "type": "integer",
           "format": "int64",
+          "x-omitempty": false,
           "example": 101
         },
         "words": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/QuestWord"
-          }
+          },
+          "x-omitempty": false
         }
       }
     },
     "QuestWord": {
       "type": "object",
-      "required": [
-        "quest_word_idx",
-        "position"
-      ],
       "properties": {
         "position": {
           "$ref": "#/definitions/WordPosition"
@@ -169,6 +172,7 @@ func init() {
         "quest_word_idx": {
           "description": "The zero-based index of this word within the quest's answer.",
           "type": "integer",
+          "x-omitempty": false,
           "example": 0
         }
       }
@@ -222,27 +226,25 @@ func init() {
     },
     "WordPosition": {
       "type": "object",
-      "required": [
-        "book",
-        "page",
-        "line",
-        "word"
-      ],
       "properties": {
         "book": {
           "type": "string",
+          "x-omitempty": false,
           "example": "A31-1"
         },
         "line": {
           "type": "string",
+          "x-omitempty": false,
           "example": "15"
         },
         "page": {
           "type": "string",
+          "x-omitempty": false,
           "example": "42"
         },
         "word": {
           "type": "string",
+          "x-omitempty": false,
           "example": "3"
         }
       }
@@ -329,7 +331,7 @@ func init() {
           "200": {
             "description": "The provided answer is correct.",
             "schema": {
-              "type": "object"
+              "$ref": "#/definitions/CorrectAnswerResponse"
             }
           },
           "400": {
@@ -364,6 +366,15 @@ func init() {
         }
       }
     },
+    "CorrectAnswerResponse": {
+      "type": "object",
+      "properties": {
+        "keyword": {
+          "type": "string",
+          "x-omitempty": false
+        }
+      }
+    },
     "InternalServerError": {
       "type": "object",
       "properties": {
@@ -375,30 +386,24 @@ func init() {
     },
     "QuestResponse": {
       "type": "object",
-      "required": [
-        "quest_id",
-        "words"
-      ],
       "properties": {
         "quest_id": {
           "type": "integer",
           "format": "int64",
+          "x-omitempty": false,
           "example": 101
         },
         "words": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/QuestWord"
-          }
+          },
+          "x-omitempty": false
         }
       }
     },
     "QuestWord": {
       "type": "object",
-      "required": [
-        "quest_word_idx",
-        "position"
-      ],
       "properties": {
         "position": {
           "$ref": "#/definitions/WordPosition"
@@ -406,6 +411,7 @@ func init() {
         "quest_word_idx": {
           "description": "The zero-based index of this word within the quest's answer.",
           "type": "integer",
+          "x-omitempty": false,
           "example": 0
         }
       }
@@ -459,27 +465,25 @@ func init() {
     },
     "WordPosition": {
       "type": "object",
-      "required": [
-        "book",
-        "page",
-        "line",
-        "word"
-      ],
       "properties": {
         "book": {
           "type": "string",
+          "x-omitempty": false,
           "example": "A31-1"
         },
         "line": {
           "type": "string",
+          "x-omitempty": false,
           "example": "15"
         },
         "page": {
           "type": "string",
+          "x-omitempty": false,
           "example": "42"
         },
         "word": {
           "type": "string",
+          "x-omitempty": false,
           "example": "3"
         }
       }
