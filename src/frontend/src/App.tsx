@@ -13,7 +13,7 @@ import "./App.css";
 function App() {
   const [questData, setQuestData] = useState<QuestResponse | null>(null);
   const [validationResult, setValidationResult] = useState<string | null>(null);
-  const [validationMistakes, setValidationMistakes] = useState<string | null>(
+  const [validationMistakes, setValidationMistakes] = useState<string[] | null>(
     null
   );
   const [questTeamID, setQuestTeamID] = useState<number | null>(null);
@@ -40,11 +40,11 @@ function App() {
     try {
       await api.api.v1ValidateCreate({
         team_id: questTeamID,
-        answer: answers,
+        answer: answers.map((ans) => ans.toLowerCase()),
         quest_id: questData?.quest_id,
       });
       setValidationMistakes(null);
-      setValidationResult("Success");
+      setValidationResult(`Квест выполнен: комада ${questTeamID}`);
     } catch (e) {
       handleValidationError(e, setValidationMistakes);
     }
@@ -52,16 +52,25 @@ function App() {
 
   return (
     <div className="App">
-      <h2>Library quest</h2>
+      <h1>Library quest</h1>
       {questData === null && <TeamForm onSubmitTeam={handleFetchQuest} />}
       {questData !== null && validationResult === null && (
-        <Cards words={questData.words} onSubmitAnswers={handleValidate} />
+        <Cards
+          words={questData.words}
+          mistakes={validationMistakes}
+          onSubmitAnswers={handleValidate}
+        />
       )}
       {validationMistakes !== null && (
-        <p className="message error">Ошибки в словах: {validationMistakes}</p>
+        <p className="message error">
+          Ошибки в словах: {validationMistakes.join(", ")}
+        </p>
       )}
       {validationResult !== null && (
-        <p className="message success">{validationResult}</p>
+        <>
+          <p className="message success">{validationResult}</p>
+          <p>Не забудь сделать скриншот!!</p>
+        </>
       )}
     </div>
   );
@@ -69,7 +78,7 @@ function App() {
 
 function handleValidationError(
   err: unknown,
-  setResultUI: (res: string) => void
+  setResultUI: (res: string[]) => void
 ) {
   if (
     typeof err === "object" &&
@@ -84,32 +93,32 @@ function handleValidationError(
     switch (status) {
       case 401: {
         const authErr = error as AuthorizationError;
-        setResultUI(authErr.error || "Authorization failed.");
+        setResultUI([authErr.error || "Authorization failed."]);
         return;
       }
       case 400: {
         const valErr = error as ValidationError;
         if (valErr.mistakes === undefined) {
-          setResultUI("mistaks undefined");
+          setResultUI(["mistaks undefined"]);
           return;
         }
-        setResultUI(valErr.mistakes?.map((id) => id + 1).join(", "));
+        setResultUI(valErr.mistakes?.map((id) => (id + 1).toString()));
         return;
       }
       case 500: {
         const serverErr = error as InternalServerError;
-        setResultUI(serverErr.error || "An internal server error occurred.");
+        setResultUI([serverErr.error || "An internal server error occurred."]);
         return;
       }
       default: {
-        setResultUI(`Unhandled error with status: ${status}`);
+        setResultUI([`Unhandled error with status: ${status}`]);
         return;
       }
     }
   }
 
   console.log(err);
-  setResultUI("An unknown or network error occurred.");
+  setResultUI(["An unknown or network error occurred."]);
 }
 
 export default App;

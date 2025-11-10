@@ -5,10 +5,12 @@ import "../Shared.css";
 export default function WordCard({
   wordPosition,
   thisWordAnswer,
+  hasMistake,
   setThisWordAnswer,
 }: {
   wordPosition: WordPosition;
   thisWordAnswer: string;
+  hasMistake: boolean;
   setThisWordAnswer: (newAnswer: string) => void;
 }) {
   const maxAnswerLen = 20;
@@ -36,6 +38,9 @@ export default function WordCard({
             setThisWordAnswer(e.currentTarget.value.slice(0, maxAnswerLen))
           }
           placeholder="Enter word here..."
+          style={
+            hasMistake ? { backgroundColor: "rgba(255, 180, 180, 1)" } : {}
+          }
         />
       </>
     </div>

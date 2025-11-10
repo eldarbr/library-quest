@@ -18,13 +18,13 @@ type FileToMemoDB struct {
 	quests map[int]quest.Quest
 }
 
-func NewFileToMemoDB(fp string) (FileToMemoDB, error) {
+func NewFileToMemoDB(fp string) (*FileToMemoDB, error) {
 	data, err := readData(fp)
 	if err != nil {
-		return FileToMemoDB{}, fmt.Errorf("read data: %w", err)
+		return nil, fmt.Errorf("read data: %w", err)
 	}
 
-	return FileToMemoDB{quests: data}, nil
+	return &FileToMemoDB{quests: data}, nil
 }
 
 func readData(fp string) (map[int]quest.Quest, error) {

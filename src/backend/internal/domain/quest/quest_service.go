@@ -5,6 +5,12 @@ var (
 	minQuestCnt    = len(questIDPattern)
 )
 
+func init() {
+	if minQuestCnt < 1 {
+		panic("wrong quest pattern")
+	}
+}
+
 func DetermineQuestForTeam(teamID int) int {
 	return questIDPattern[teamID%len(questIDPattern)]
 }

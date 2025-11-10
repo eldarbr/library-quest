@@ -8,7 +8,7 @@
   gap: 1.5rem;
 }
 
-.App h2 {
+.App h1 {
   text-align: center;
   color: var(--text-color);
 }

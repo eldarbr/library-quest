@@ -6,9 +6,11 @@ import "../Shared.css";
 
 export default function Cards({
   words,
+  mistakes,
   onSubmitAnswers,
 }: {
   words: QuestWord[];
+  mistakes: string[] | null;
   onSubmitAnswers: (answers: string[]) => Promise<void>;
 }) {
   const [answers, setAnswers] = useState<string[]>(
@@ -27,6 +29,10 @@ export default function Cards({
             key={word.quest_word_idx}
             wordPosition={word.position}
             thisWordAnswer={answers[idx]}
+            hasMistake={
+              mistakes !== null &&
+              mistakes.filter((val) => val == (idx + 1).toString()).length !== 0
+            }
             setThisWordAnswer={(answer: string) => {
               const newAnswers = [...answers];
               newAnswers[idx] = answer;
