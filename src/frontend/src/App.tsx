@@ -30,7 +30,7 @@ function App() {
     }
     try {
       const res = await api.api.v1ValidateRandomCreate({
-        answer: answers.map((ans) => ans.toLowerCase()),
+        answer: answers,
         quest_id: questData?.quest_id,
       });
       setValidationMistakes(null);

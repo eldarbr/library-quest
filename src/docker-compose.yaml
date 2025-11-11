@@ -23,6 +23,7 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     networks:
       - quest-net
+    restart: unless-stopped
 
   backend:
     build:
@@ -45,6 +46,7 @@ services:
       - "traefik.http.routers.backend.middlewares=api-ratelimit"
       - "traefik.http.middlewares.api-ratelimit.ratelimit.average=40"
       - "traefik.http.middlewares.api-ratelimit.ratelimit.burst=60"
+    restart: unless-stopped
 
   frontend:
     build:
@@ -60,6 +62,7 @@ services:
       - "traefik.http.routers.frontend.rule=Host(`${FRONTEND_FQDN}`)"
       - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=8080"
+    restart: unless-stopped
 
 networks:
   quest-net:

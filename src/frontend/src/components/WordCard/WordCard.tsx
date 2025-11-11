@@ -6,14 +6,16 @@ export default function WordCard({
   wordPosition,
   thisWordAnswer,
   hasMistake,
+  onEnterKey,
   setThisWordAnswer,
 }: {
   wordPosition: WordPosition;
   thisWordAnswer: string;
   hasMistake: boolean;
+  onEnterKey: () => void;
   setThisWordAnswer: (newAnswer: string) => void;
 }) {
-  const maxAnswerLen = 20;
+  const maxAnswerLen = 25;
 
   return (
     <div className="word-card">
@@ -37,6 +39,10 @@ export default function WordCard({
           onInput={(e) =>
             setThisWordAnswer(e.currentTarget.value.slice(0, maxAnswerLen))
           }
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+            onEnterKey();
+          }}
           placeholder="Enter word here..."
           style={
             hasMistake ? { backgroundColor: "rgba(255, 180, 180, 1)" } : {}

@@ -23,6 +23,10 @@ export default function Cards({
 
   const mistakeSet = useMemo(() => new Set(mistakes), [mistakes]);
 
+  const submitAnswers = () => {
+    onSubmitAnswers(answers.map((a) => a.trim().toLowerCase()));
+  };
+
   return (
     <div className="cards-container">
       {words.map((word, idx) => {
@@ -32,6 +36,7 @@ export default function Cards({
             wordPosition={word.position}
             thisWordAnswer={answers[idx]}
             hasMistake={mistakeSet.has((idx + 1).toString())}
+            onEnterKey={submitAnswers}
             setThisWordAnswer={(answer: string) => {
               const newAnswers = [...answers];
               newAnswers[idx] = answer;
@@ -40,7 +45,7 @@ export default function Cards({
           />
         );
       })}
-      <button onClick={() => onSubmitAnswers(answers)}>Отправить</button>
+      <button onClick={submitAnswers}>Отправить</button>
     </div>
   );
 }
